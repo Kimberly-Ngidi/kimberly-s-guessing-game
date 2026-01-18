@@ -29,7 +29,15 @@ def save_high_score(difficulty, attempts):
 @app.route('/')
 def index():
     scores = load_high_scores()
-    return render_template('index.html', scores=scores)
+    # Format scores for display
+    formatted_scores = {}
+    for diff, entries in scores.items():
+        if isinstance(entries, list):
+            formatted_scores[diff] = entries
+        else:
+            # Migration for old format
+            formatted_scores[diff] = [{"name": "Previous Best", "attempts": entries}]
+    return render_template('index.html', scores=formatted_scores)
 
 @app.route('/start', methods=['POST'])
 def start_game():
@@ -46,6 +54,29 @@ def start_game():
         "message": f"Game started! Difficulty: {difficulty}",
         "max_attempts": max_attempts
     })
+
+@app.route('/save_score', methods=['POST'])
+def save_score():
+    if not session.get('game_over') or 'difficulty' not in session:
+        return jsonify({"error": "No game to save"}), 400
+    
+    name = request.json.get('name', 'Anonymous')
+    attempts = session['attempts']
+    difficulty = session['difficulty']
+    
+    scores = load_high_scores()
+    # Store as a list of entries for each difficulty
+    if difficulty not in scores:
+        scores[difficulty] = []
+    
+    scores[difficulty].append({"name": name, "attempts": attempts})
+    # Sort by attempts and keep top 5
+    scores[difficulty] = sorted(scores[difficulty], key=lambda x: x['attempts'])[:5]
+    
+    with open(HIGH_SCORE_FILE, "w") as f:
+        json.dump(scores, f)
+        
+    return jsonify({"success": True})
 
 @app.route('/guess', methods=['POST'])
 def guess():
@@ -65,12 +96,10 @@ def guess():
     result = ""
     status = "playing"
     
-    is_high_score = False
     if user_guess == target:
         result = f"🎉 Correct! You won in {attempts} attempts!"
         status = "won"
         session['game_over'] = True
-        is_high_score = save_high_score(session['difficulty'], attempts)
     elif attempts >= max_attempts:
         result = f"💀 Game Over! The number was {target}."
         status = "lost"
@@ -83,8 +112,7 @@ def guess():
     return jsonify({
         "result": result,
         "attempts": attempts,
-        "status": status,
-        "is_high_score": status == "won" and is_high_score if 'is_high_score' in locals() else False
+        "status": status
     })
 
 if __name__ == '__main__':

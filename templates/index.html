@@ -30,13 +30,32 @@
         <div class="high-scores">
             <h3>🏆 High Scores</h3>
             <ul>
-                {% for diff, score in scores.items() %}
-                <li>{{ diff }}: {{ score }} attempts</li>
+                {% for diff, entries in scores.items() %}
+                    {% for entry in entries %}
+                    <li>{{ entry.name }} played {{ diff }}: {{ entry.attempts }} attempts</li>
+                    {% endfor %}
                 {% endfor %}
             </ul>
         </div>
         
         <button id="reset-btn" onclick="location.reload()" style="display:none;">Play Again</button>
+    </div>
+
+    <div id="winner-page" class="winner-overlay">
+        <div class="winner-crown">👑</div>
+        <div class="winner-text">CHAMPION!</div>
+        <div class="meme-container">
+            <div class="meme">🥳</div>
+            <div class="meme">✨</div>
+            <div class="meme">🏆</div>
+            <div class="meme">👑</div>
+            <div class="meme">💖</div>
+        </div>
+        <div style="margin-top: 20px;">
+            <input type="text" id="winner-name" placeholder="Enter Your Name" style="width: 250px; font-size: 1.2rem;">
+            <br>
+            <button onclick="saveWinnerScore()" style="background: gold; color: black; font-size: 1.2rem; margin-top: 10px;">CLAIM YOUR GLORY</button>
+        </div>
     </div>
 
     <div id="looser-page" class="looser-overlay">
@@ -94,13 +113,22 @@
                     setTimeout(() => {
                         document.getElementById('looser-page').style.display = 'flex';
                     }, 1000);
-                } else {
-                    document.getElementById('reset-btn').style.display = 'inline-block';
-                    if (data.is_high_score) {
-                        alert("NEW HIGH SCORE! 🏅");
-                    }
+                } else if (data.status === 'won') {
+                    setTimeout(() => {
+                        document.getElementById('winner-page').style.display = 'flex';
+                    }, 1000);
                 }
             }
+        }
+
+        async function saveWinnerScore() {
+            const name = document.getElementById('winner-name').value || "Anonymous";
+            await fetch('/save_score', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name: name})
+            });
+            location.reload();
         }
     </script>
 </body>
