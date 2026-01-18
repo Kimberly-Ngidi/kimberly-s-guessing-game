@@ -159,7 +159,7 @@ input {
     text-transform: uppercase;
     text-shadow: 0 0 20px red;
     margin-bottom: 20px;
-    animation: shake 0.1s infinite;
+    animation: shake 0.1s infinite, zoom 0.5s infinite alternate;
 }
 
 /* Winner Page Styles */
