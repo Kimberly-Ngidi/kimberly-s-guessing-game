@@ -65,6 +65,7 @@ def guess():
     result = ""
     status = "playing"
     
+    is_high_score = False
     if user_guess == target:
         result = f"🎉 Correct! You won in {attempts} attempts!"
         status = "won"
