@@ -79,9 +79,36 @@ input {
     border-top: 1px solid rgba(255,255,255,0.2);
 }
 
+.high-scores h3 {
+    animation: bounce 2s infinite;
+}
+
 .high-scores ul {
     list-style: none;
     padding: 0;
+}
+
+.high-scores li {
+    background: rgba(255, 255, 255, 0.1);
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 8px;
+    animation: slideIn 0.5s ease-out forwards, floating 3s infinite ease-in-out;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); color: #f1c40f; }
+}
+
+@keyframes floating {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(10px); }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 #reset-btn {
