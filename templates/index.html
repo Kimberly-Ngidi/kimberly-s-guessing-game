@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guessing Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Number Guessing Game 🧐</h1>
+        
+        <div id="setup">
+            <h3>Choose Difficulty:</h3>
+            <div class="difficulty-buttons">
+                <button onclick="startGame('Easy')" class="btn-easy">Easy (15)</button>
+                <button onclick="startGame('Medium')" class="btn-medium">Medium (10)</button>
+                <button onclick="startGame('Hard')" class="btn-hard">Hard (5)</button>
+            </div>
+        </div>
+
+        <div id="game-area" style="display:none;">
+            <p id="game-info"></p>
+            <input type="number" id="guess-input" placeholder="Enter 1-100">
+            <button onclick="makeGuess()" id="guess-btn">Guess!</button>
+            <p id="feedback"></p>
+            <p>Attempts: <span id="attempt-count">0</span> / <span id="max-attempt-count">0</span></p>
+        </div>
+
+        <div class="high-scores">
+            <h3>🏆 High Scores</h3>
+            <ul>
+                {% for diff, score in scores.items() %}
+                <li>{{ diff }}: {{ score }} attempts</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <button id="reset-btn" onclick="location.reload()" style="display:none;">Play Again</button>
+    </div>
+
+    <script>
+        let maxAttempts = 0;
+
+        async function startGame(diff) {
+            const resp = await fetch('/start', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({difficulty: diff})
+            });
+            const data = await resp.json();
+            maxAttempts = data.max_attempts;
+            
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            document.getElementById('game-info').innerText = `I'm thinking of a number... You have ${maxAttempts} tries!`;
+            document.getElementById('max-attempt-count').innerText = maxAttempts;
+            document.getElementById('attempt-count').innerText = 0;
+            document.getElementById('feedback').innerText = "";
+        }
+
+        async function makeGuess() {
+            const guess = document.getElementById('guess-input').value;
+            if (!guess) return;
+
+            const resp = await fetch('/guess', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({guess: guess})
+            });
+            const data = await resp.json();
+            
+            document.getElementById('feedback').innerText = data.result;
+            document.getElementById('attempt-count').innerText = data.attempts;
+            document.getElementById('guess-input').value = "";
+
+            if (data.status !== 'playing') {
+                document.getElementById('guess-btn').disabled = true;
+                document.getElementById('guess-input').disabled = true;
+                document.getElementById('reset-btn').style.display = 'inline-block';
+                if (data.is_high_score) {
+                    alert("NEW HIGH SCORE! 🏅");
+                }
+            }
+        }
+    </script>
+</body>
+</html>
