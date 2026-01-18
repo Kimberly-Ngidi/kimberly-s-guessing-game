@@ -147,12 +147,25 @@
 
         async function saveWinnerScore() {
             const name = document.getElementById('winner-name').value || "Anonymous";
-            await fetch('/save_score', {
+            const resp = await fetch('/save_score', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({name: name})
             });
-            location.reload();
+            const data = await resp.json();
+            if (data.success) {
+                // Fetch the index page content and update the high scores list without full refresh
+                const indexResp = await fetch('/');
+                const html = await indexResp.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newHighScores = doc.querySelector('.high-scores ul').innerHTML;
+                document.querySelector('.high-scores ul').innerHTML = newHighScores;
+                
+                // Hide winner page and show play again button
+                document.getElementById('winner-page').style.display = 'none';
+                document.getElementById('reset-btn').style.display = 'inline-block';
+            }
         }
     </script>
 </body>
