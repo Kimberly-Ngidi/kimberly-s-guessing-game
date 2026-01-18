@@ -42,32 +42,22 @@
     </div>
 
     <div id="winner-page" class="winner-overlay">
-        <div class="winner-crown">👑</div>
-        <div class="winner-text">CHAMPION!</div>
-        <div class="meme-container">
-            <div class="meme">🥳</div>
-            <div class="meme">✨</div>
-            <div class="meme">🏆</div>
-            <div class="meme">👑</div>
-            <div class="meme">💖</div>
-        </div>
-        <div style="margin-top: 20px;">
-            <input type="text" id="winner-name" placeholder="Enter Your Name" style="width: 250px; font-size: 1.2rem;">
-            <br>
-            <button onclick="saveWinnerScore()" style="background: gold; color: black; font-size: 1.2rem; margin-top: 10px;">CLAIM YOUR GLORY</button>
+        <div class="winner-content">
+            <div class="winner-crown">👑</div>
+            <div class="winner-text">CHAMPION!</div>
+            <div class="confetti-container" id="confetti"></div>
+            <div style="margin-top: 20px;">
+                <input type="text" id="winner-name" placeholder="Enter Your Name" style="width: 250px; font-size: 1.2rem; border-radius: 10px; border: none; padding: 10px;">
+                <br>
+                <button onclick="saveWinnerScore()" style="background: #fff; color: #ff8c00; font-size: 1.2rem; margin-top: 15px; padding: 10px 30px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">CLAIM YOUR GLORY</button>
+            </div>
         </div>
     </div>
 
     <div id="looser-page" class="looser-overlay">
         <div class="looser-text">YOU SUCK LOOSER</div>
-        <div class="meme-container">
-            <div class="meme">😂</div>
-            <div class="meme">🤣</div>
-            <div class="meme">🤡</div>
-            <div class="meme">💀</div>
-            <div class="meme">🤣</div>
-        </div>
-        <button id="looser-reset" onclick="location.reload()" style="margin-top: 50px; font-size: 1.5rem; padding: 20px 40px;">TRY AGAIN, FAILURE</button>
+        <div class="falling-tears" id="tears"></div>
+        <button id="looser-reset" onclick="location.reload()" style="margin-top: 50px; font-size: 1.5rem; padding: 20px 40px; border-radius: 50px; background: red; color: white; border: 5px solid white;">TRY AGAIN, FAILURE</button>
     </div>
 
     <script>
@@ -91,7 +81,8 @@
         }
 
         async function makeGuess() {
-            const guess = document.getElementById('guess-input').value;
+            const guessInput = document.getElementById('guess-input');
+            const guess = guessInput.value;
             if (!guess) return;
 
             const resp = await fetch('/guess', {
@@ -103,21 +94,54 @@
             
             document.getElementById('feedback').innerText = data.result;
             document.getElementById('attempt-count').innerText = data.attempts;
-            document.getElementById('guess-input').value = "";
+            guessInput.value = "";
 
             if (data.status !== 'playing') {
                 document.getElementById('guess-btn').disabled = true;
-                document.getElementById('guess-input').disabled = true;
+                guessInput.disabled = true;
                 
                 if (data.status === 'lost') {
+                    createTears();
                     setTimeout(() => {
-                        document.getElementById('looser-page').style.display = 'flex';
-                    }, 1000);
+                        const overlay = document.getElementById('looser-page');
+                        overlay.style.display = 'flex';
+                        overlay.style.opacity = '0';
+                        setTimeout(() => overlay.style.opacity = '1', 10);
+                    }, 500);
                 } else if (data.status === 'won') {
+                    createConfetti();
                     setTimeout(() => {
-                        document.getElementById('winner-page').style.display = 'flex';
-                    }, 1000);
+                        const overlay = document.getElementById('winner-page');
+                        overlay.style.display = 'flex';
+                        overlay.style.opacity = '0';
+                        setTimeout(() => overlay.style.opacity = '1', 10);
+                    }, 500);
                 }
+            }
+        }
+
+        function createConfetti() {
+            const container = document.getElementById('confetti');
+            for(let i=0; i<50; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti-piece';
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.animationDelay = Math.random() * 3 + 's';
+                c.style.backgroundColor = ['#fff', '#ffd700', '#ff69b4', '#00ffff'][Math.floor(Math.random()*4)];
+                container.appendChild(c);
+            }
+        }
+
+        function createTears() {
+            const container = document.getElementById('tears');
+            for(let i=0; i<30; i++) {
+                const t = document.createElement('div');
+                t.className = 'tear';
+                t.innerText = '😭';
+                t.style.left = Math.random() * 100 + 'vw';
+                t.style.animationDelay = Math.random() * 2 + 's';
+                t.style.fontSize = (Math.random() * 2 + 1) + 'rem';
+                container.appendChild(t);
             }
         }
 

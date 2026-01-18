@@ -112,7 +112,8 @@ def guess():
     return jsonify({
         "result": result,
         "attempts": attempts,
-        "status": status
+        "status": status,
+        "target": target if status != 'playing' else None
     })
 
 if __name__ == '__main__':
