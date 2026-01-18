@@ -34,7 +34,7 @@ def index():
 @app.route('/start', methods=['POST'])
 def start_game():
     difficulty = request.json.get('difficulty', 'Medium')
-    max_attempts = {"Easy": 5, "Medium": 3, "Hard": 1}.get(difficulty, 3)
+    max_attempts = {"Easy": 9, "Medium": 6, "Hard": 3}.get(difficulty, 6)
     
     session['target'] = random.randint(1, 100)
     session['attempts'] = 0
