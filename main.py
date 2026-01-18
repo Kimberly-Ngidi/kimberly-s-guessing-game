@@ -65,8 +65,9 @@ def save_score():
     difficulty = session['difficulty']
     
     scores = load_high_scores()
-    # Store as a list of entries for each difficulty
-    if difficulty not in scores:
+    
+    # Ensure structure is correct
+    if difficulty not in scores or not isinstance(scores[difficulty], list):
         scores[difficulty] = []
     
     scores[difficulty].append({"name": name, "attempts": attempts})
